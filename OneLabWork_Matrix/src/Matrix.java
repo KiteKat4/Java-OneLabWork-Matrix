@@ -203,7 +203,7 @@ public class Matrix {
             System.out.print("[ ");
             for (int j = 0; j < this.colCount; j++) {
                 this.arr[i][j].show();
-                System.out.print("     ");
+                System.out.print("    ");
             }
             System.out.println(" ]");
         }
