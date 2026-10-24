@@ -53,18 +53,25 @@ public class Matrix {
     }
 
     // Поэлементное деление
-    public Matrix divideMatrices(Matrix other) {
-        if (this.rowCount != other.rowCount || this.colCount != other.colCount) {
-            System.out.println("Ошибка: Размеры не совпадают!");
-            return new Matrix(0, 0);
-        }
-        Matrix resMatrix = new Matrix(this.rowCount, this.colCount);
-        for (int i = 0; i < this.rowCount; ++i) {
-            for (int j = 0; j < this.colCount; ++j) {
-                resMatrix.arr[i][j] = this.arr[i][j].divide(other.arr[i][j]);
+    public Matrix divideMatrices(Matrix other, boolean rightDivision) {
+        ComplexNumbers det = other.calcDeterminant();
+        Matrix ObratMatrix = new Matrix(other.rowCount, other.colCount);
+        Matrix SouzMatrix = other.createSouzMatrix();
+        ComplexNumbers one = new ComplexNumbers(1.0, 0.0);
+        ComplexNumbers InvDet = one.divideSoprChislo(det); // Деление 1/det(B). Матрица B - это other
+
+        for (int i = 0; i < SouzMatrix.rowCount; ++i){
+            for (int j = 0; j < SouzMatrix.colCount; ++j){
+                ObratMatrix.arr[i][j] = InvDet.multiply(SouzMatrix.arr[i][j]);
             }
         }
-        return resMatrix;
+
+        if (rightDivision == true) {
+            return this.multiplyMatrices(ObratMatrix); // Правое деление: A * B⁻¹
+        }
+        else {
+            return ObratMatrix.multiplyMatrices(this); // Левое деление: B⁻¹ * A
+        }
     }
 
     // Транспонирование
@@ -127,6 +134,49 @@ public class Matrix {
         return total;
     }
 
+    // Создание союзной (присоединённой) матрицы
+    public Matrix createSouzMatrix() {
+        Matrix Souz = new Matrix(this.rowCount, this.colCount);
+
+        // Находим алгебраические дополнения для каждого элемента [i][j]
+        for (int i = 0; i < this.rowCount; i++) {
+            for (int j = 0; j < this.colCount; j++) {
+
+                // Создаем массив для минора (на 1 меньше текущего размера)
+                int size = this.rowCount;
+                ComplexNumbers[][] smallArr = new ComplexNumbers[size - 1][size - 1];
+
+                int targetRow = 0;
+                for (int r = 0; r < size; ++r) {
+                    if (r == i) continue; // Вычеркиваем строку i
+
+                    int targetCol = 0;
+                    for (int c = 0; c < size; ++c) {
+                        if (c == j) continue; // Вычеркиваем столбец j
+                        smallArr[targetRow][targetCol] = this.arr[r][c];
+                        ++targetCol;
+                    }
+                    ++targetRow;
+                }
+
+                ComplexNumbers minorDet = runDeterminant(smallArr, size - 1); // Считаем определитель минора
+
+                // Учитываем знак (-1)^(i+j)
+                ComplexNumbers sign;
+                if ((i + j) % 2 == 0) {
+                    sign = new ComplexNumbers(1, 0);
+                } else {
+                    sign = new ComplexNumbers(-1, 0);
+                }
+
+                Souz.arr[i][j] = sign.multiply(minorDet); // Алгебраическое дополнение = знак * определитель минора
+            }
+        }
+
+        // Союзная матрица (транспонированная матрица дополнений)
+        return Souz.transposeMatrix();
+    }
+
     // Заполнение матрицы рандомными числами
     public Matrix BuildRandomMatrix(double min, double max){
         Random random = new Random();
@@ -159,4 +209,3 @@ public class Matrix {
         }
     }
 }
-

@@ -39,7 +39,7 @@ public class ComplexNumbers {
     }
 
     // Деление через сопряженное число
-    public ComplexNumbers divide(ComplexNumbers number) {
+    public ComplexNumbers divideSoprChislo(ComplexNumbers number) {
         ComplexNumbers znak = new ComplexNumbers();
         znak.realPart = number.realPart;
         znak.imagPart = number.imagPart * (-1.0);
@@ -68,4 +68,3 @@ public class ComplexNumbers {
     }
 
 }
-
